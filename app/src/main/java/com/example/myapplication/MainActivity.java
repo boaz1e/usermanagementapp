@@ -1,7 +1,7 @@
 package com.example.myapplication;
 
-import android.util.Log;
 import android.os.Bundle;
+import android.util.Log;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -21,12 +21,11 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setHasFixedSize(true);
 
-        UserAdapter adapter = new UserAdapter();
+        UserAdapter adapter = new UserAdapter(this);
         recyclerView.setAdapter(adapter);
 
         userViewModel = new ViewModelProvider(this).get(UserViewModel.class);
         userViewModel.getAllUsers().observe(this, adapter::submitList);
-
 
         userViewModel.getAllUsers().observe(this, users -> {
             if (users != null && !users.isEmpty()) {
@@ -37,10 +36,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-
-
         Log.d("MainActivity", "RecyclerView and Adapter initialized");
-
     }
-
 }
