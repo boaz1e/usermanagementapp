@@ -1,137 +1,102 @@
 package com.example.myapplication;
 
-import android.app.AlertDialog;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
-
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.DiffUtil;
+import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
-
+import com.bumptech.glide.Glide;
 import com.example.myapplication.model.User;
-import com.example.myapplication.network.ApiService;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
+public class UserAdapter extends ListAdapter<User, UserAdapter.UserViewHolder> {
 
-import java.util.List;
+    private final Context context;
+    private final OnUserActionListener onUserActionListener;
 
-public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder> {
-
-    private List<User> userList;
-    private ApiService apiService;
-    private Context context;
-
-    public UserAdapter(Context context) {
+    public UserAdapter(Context context, OnUserActionListener onUserActionListener) {
+        super(DIFF_CALLBACK);
         this.context = context;
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("https://reqres.in/")
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-        apiService = retrofit.create(ApiService.class);
+        this.onUserActionListener = onUserActionListener;
     }
 
     @NonNull
     @Override
     public UserViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.user_item, parent, false);
-        return new UserViewHolder(view);
+        View itemView = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.user_item, parent, false);
+        return new UserViewHolder(itemView);
     }
 
     @Override
     public void onBindViewHolder(@NonNull UserViewHolder holder, int position) {
-        User user = userList.get(position);
-        holder.textViewName.setText(user.getFirstName() + " " + user.getLastName());
-        holder.textViewEmail.setText(user.getEmail());
-
-        holder.buttonDelete.setOnClickListener(v -> deleteUser(user.getId(), position));
-        holder.buttonUpdate.setOnClickListener(v -> showUpdateDialog(user, position));
+        User user = getItem(position);
+        holder.bind(user);
     }
 
-    @Override
-    public int getItemCount() {
-        return userList != null ? userList.size() : 0;
+    public interface OnUserActionListener {
+        void onDeleteClick(User user);
+        void onUpdateClick(User user);
     }
 
-    public void submitList(List<User> users) {
-        this.userList = users;
-        notifyDataSetChanged();
-    }
+    class UserViewHolder extends RecyclerView.ViewHolder {
 
-    private void deleteUser(int userId, int position) {
-        Call<Void> call = apiService.deleteUser(userId);
-        call.enqueue(new Callback<Void>() {
-            @Override
-            public void onResponse(Call<Void> call, Response<Void> response) {
-                if (response.isSuccessful()) {
-                    userList.remove(position);
-                    notifyItemRemoved(position);
-                }
-            }
+        private final ImageView avatarImageView;
+        private final TextView nameTextView;
+        private final TextView emailTextView;
+        private final Button deleteButton;
+        private final Button updateButton;
 
-            @Override
-            public void onFailure(Call<Void> call, Throwable t) {
-                // Handle failure
-            }
-        });
-    }
-
-    private void showUpdateDialog(User user, int position) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        View dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_update_user, null);
-        builder.setView(dialogView);
-
-        EditText editTextName = dialogView.findViewById(R.id.editTextName);
-        editTextName.setText(user.getFirstName() + " " + user.getLastName());
-
-        builder.setPositiveButton("Update", (dialog, which) -> {
-            String updatedName = editTextName.getText().toString();
-            String[] names = updatedName.split(" ");
-            if (names.length >= 2) {
-                User updatedUser = new User();
-                updatedUser.setId(user.getId());
-                updatedUser.setFirstName(names[0]);
-                updatedUser.setLastName(names[1]);
-
-                Call<User> call = apiService.updateUser(updatedUser.getId(), updatedUser);
-                call.enqueue(new Callback<User>() {
-                    @Override
-                    public void onResponse(Call<User> call, Response<User> response) {
-                        if (response.isSuccessful()) {
-                            userList.set(position, response.body());
-                            notifyItemChanged(position);
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(Call<User> call, Throwable t) {
-                        // Handle failure
-                    }
-                });
-            }
-        });
-
-        builder.setNegativeButton("Cancel", null);
-        builder.show();
-    }
-
-    static class UserViewHolder extends RecyclerView.ViewHolder {
-        TextView textViewName, textViewEmail;
-        Button buttonDelete, buttonUpdate;
-
-        public UserViewHolder(@NonNull View itemView) {
+        UserViewHolder(@NonNull View itemView) {
             super(itemView);
-            textViewName = itemView.findViewById(R.id.textViewName);
-            textViewEmail = itemView.findViewById(R.id.textViewEmail);
-            buttonDelete = itemView.findViewById(R.id.buttonDelete);
-            buttonUpdate = itemView.findViewById(R.id.buttonUpdate);
+            avatarImageView = itemView.findViewById(R.id.imageViewAvatar);
+            nameTextView = itemView.findViewById(R.id.textViewName);
+            emailTextView = itemView.findViewById(R.id.textViewEmail);
+            deleteButton = itemView.findViewById(R.id.buttonDelete);
+            updateButton = itemView.findViewById(R.id.buttonUpdate);
+
+            deleteButton.setOnClickListener(v -> {
+                int position = getAdapterPosition();
+                if (position != RecyclerView.NO_POSITION) {
+                    onUserActionListener.onDeleteClick(getItem(position));
+                }
+            });
+
+            updateButton.setOnClickListener(v -> {
+                int position = getAdapterPosition();
+                if (position != RecyclerView.NO_POSITION) {
+                    onUserActionListener.onUpdateClick(getItem(position));
+                }
+            });
+        }
+
+        void bind(User user) {
+            nameTextView.setText(user.getFirstName() + " " + user.getLastName());
+            emailTextView.setText(user.getEmail());
+
+            // Load the avatar image with Glide
+            Glide.with(context)
+                    .load(user.getAvatar())
+                    .placeholder(R.drawable.ic_placeholder) // Optional placeholder image
+                    .error(R.drawable.ic_error) // Optional error image
+                    .into(avatarImageView);
         }
     }
+
+    private static final DiffUtil.ItemCallback<User> DIFF_CALLBACK = new DiffUtil.ItemCallback<User>() {
+        @Override
+        public boolean areItemsTheSame(@NonNull User oldItem, @NonNull User newItem) {
+            return oldItem.getId() == newItem.getId();
+        }
+
+        @Override
+        public boolean areContentsTheSame(@NonNull User oldItem, @NonNull User newItem) {
+            return oldItem.equals(newItem);
+        }
+    };
 }

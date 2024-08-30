@@ -22,6 +22,17 @@ public class User {
     @SerializedName("avatar")
     private String avatar;
 
+    public User() {
+        // Default constructor required for calls to DataSnapshot.getValue(User.class)
+    }
+
+    public User(String firstName, String lastName, String email, String avatar) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.avatar = avatar;
+    }
+
     // Getter and Setter for ID
     public int getId() {
         return id;
@@ -42,7 +53,6 @@ public class User {
 
     // Getter and Setter for First Name
     public String getFirstName() {
-
         return firstName;
     }
 

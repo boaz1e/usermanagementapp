@@ -1,15 +1,26 @@
 package com.example.myapplication.model;
 
+import com.google.gson.annotations.SerializedName;
+
 import java.util.List;
 
 public class UserResponse {
+
+    @SerializedName("page")
     private int page;
-    private int per_page;
+
+    @SerializedName("per_page")
+    private int perPage;
+
+    @SerializedName("total")
     private int total;
-    private int total_pages;
+
+    @SerializedName("total_pages")
+    private int totalPages;
+
+    @SerializedName("data")
     private List<User> data;
 
-    // Getters and Setters
     public int getPage() {
         return page;
     }
@@ -19,11 +30,11 @@ public class UserResponse {
     }
 
     public int getPerPage() {
-        return per_page;
+        return perPage;
     }
 
-    public void setPerPage(int per_page) {
-        this.per_page = per_page;
+    public void setPerPage(int perPage) {
+        this.perPage = perPage;
     }
 
     public int getTotal() {
@@ -35,13 +46,12 @@ public class UserResponse {
     }
 
     public int getTotalPages() {
-        return total_pages;
+        return totalPages;
     }
 
-    public void setTotalPages(int total_pages) {
-        this.total_pages = total_pages;
+    public void setTotalPages(int totalPages) {
+        this.totalPages = totalPages;
     }
-
 
     public List<User> getData() {
         return data;
