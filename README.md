@@ -45,7 +45,6 @@ To build and run the application:
 4. **Persisted Data:**
    - The app uses a local Room database to persist user data. Even after closing and reopening the app, the users will remain stored locally.
 
-![User Interface Screenshot](https://via.placeholder.com/400x800.png?text=Insert+Your+Screenshot+Here)
 
 ## Assumptions
 - The API returns valid and well-formed JSON responses.
