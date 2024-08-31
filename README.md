@@ -8,7 +8,7 @@ To set up and run this project locally, follow these steps:
 
 1. **Clone the Repository:**
    ```bash
-   git clone [https://github.com/yourusername/user-management-app.git](https://github.com/boaz1e/usermanagementapp)
+   git clone https://github.com/boaz1e/usermanagementapp
    ```
 
 2. **Open in Android Studio:**
